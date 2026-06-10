@@ -8,12 +8,12 @@ import '../App.css';
 const AllNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [typeFilter, setTypeFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const { readIds, markAsRead } = useReadStatus();
 
   useEffect(() => {
     const loadData = async () => {
-      const params = { page, limit: 20 };
+      const params = { page, limit: 10 };
       if (typeFilter) params.notification_type = typeFilter;
       const data = await fetchNotifications(params);
       setNotifications(data);

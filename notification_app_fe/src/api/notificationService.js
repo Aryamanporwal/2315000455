@@ -1,7 +1,9 @@
 import { Log } from '../logging_middleware/logger';
 
-const API_URL = "http://4.224.186.213/evaluation-service/notifications";
-const TOKEN = "YOUR_BEARER_TOKEN_HERE"; 
+const API_URL = "/evaluation-service/notifications";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhcnlhbWFuLmdsYV9jczIzQGdsYS5hYy5pbiIsImV4cCI6MTc4MTA3ODA0MiwiaWF0IjoxNzgxMDc3MTQyLCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiNjMxMjIyNTEtM2UyNi00ZWNmLWFkMmUtOWM1ZDQwZTNlMWNiIiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoiYXJ5YW1hbiIsInN1YiI6ImFkODEwMjE4LTBkOTctNDc4Mi04NjZhLTRiZTQyMGY5NWFmNCJ9LCJlbWFpbCI6ImFyeWFtYW4uZ2xhX2NzMjNAZ2xhLmFjLmluIiwibmFtZSI6ImFyeWFtYW4iLCJyb2xsTm8iOiIyMzE1MDAwNDU1IiwiYWNjZXNzQ29kZSI6IlJQc2dZdCIsImNsaWVudElEIjoiYWQ4MTAyMTgtMGQ5Ny00NzgyLTg2NmEtNGJlNDIwZjk1YWY0IiwiY2xpZW50U2VjcmV0IjoiTmplc3RiVnVWYkN0eXNTbiJ9.BQJjPHIO7PCzoHBhtA5mD5M2e3B1euL9zO8Qt8O2a64"; 
+
+// {"token_type":"Bearer","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhcnlhbWFuLmdsYV9jczIzQGdsYS5hYy5pbiIsImV4cCI6MTc4MTA3ODA0MiwiaWF0IjoxNzgxMDc3MTQyLCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiNjMxMjIyNTEtM2UyNi00ZWNmLWFkMmUtOWM1ZDQwZTNlMWNiIiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoiYXJ5YW1hbiIsInN1YiI6ImFkODEwMjE4LTBkOTctNDc4Mi04NjZhLTRiZTQyMGY5NWFmNCJ9LCJlbWFpbCI6ImFyeWFtYW4uZ2xhX2NzMjNAZ2xhLmFjLmluIiwibmFtZSI6ImFyeWFtYW4iLCJyb2xsTm8iOiIyMzE1MDAwNDU1IiwiYWNjZXNzQ29kZSI6IlJQc2dZdCIsImNsaWVudElEIjoiYWQ4MTAyMTgtMGQ5Ny00NzgyLTg2NmEtNGJlNDIwZjk1YWY0IiwiY2xpZW50U2VjcmV0IjoiTmplc3RiVnVWYkN0eXNTbiJ9.BQJjPHIO7PCzoHBhtA5mD5M2e3B1euL9zO8Qt8O2a64","expires_in":1781078042}
 
 export const fetchNotifications = async (params = {}) => {
   try {
@@ -23,8 +25,24 @@ export const fetchNotifications = async (params = {}) => {
     }
 
     const data = await response.json();
-    Log("frontend", "info", "api", `Successfully fetched ${data.notifications?.length || 0} notifications`);
-    return data.notifications || [];
+    
+    // DEBUG: Print the exact response to your browser console
+    console.log(`API Response for ${queryParams || 'ALL'}:`, data);
+
+    // Resilient fallback to find the array no matter how the server formats it
+    let notificationsArray = [];
+    if (Array.isArray(data)) {
+        notificationsArray = data;
+    } else if (data.notifications) {
+        notificationsArray = data.notifications;
+    } else if (data.content) {
+        notificationsArray = data.content;
+    } else if (data.data) {
+        notificationsArray = data.data;
+    }
+
+    Log("frontend", "info", "api", `Successfully fetched ${notificationsArray.length} notifications`);
+    return notificationsArray;
     
   } catch (error) {
     Log("frontend", "error", "api", `Fetch failed: ${error.message}`);
